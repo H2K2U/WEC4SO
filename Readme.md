@@ -45,8 +45,8 @@ textbooks:
 
 | Ref  | Title                                                                                                                       | Scope                                                                           |
 | ---- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| \[1] | **Филиппова Т.А., Сидоркин Ю.М., Русина А.Г.**<br>*Оптимизация режимов электростанций и энергосистем*, 3‑е изд., НГТУ, 2018 | General optimisation of power‑system operation fileciteturn1file0L1-L20     |
-| \[2] | **Секретарев Ю.А. и др.** *Основы расчётов гидроэнергетических режимов ГЭС в энергосистеме*, НГТУ, 2020                     | Hydrological‑energy calculations & dispatch curves fileciteturn1file3L1-L20 |
+| \[1] | **Филиппова Т.А., Сидоркин Ю.М., Русина А.Г.**<br>*Оптимизация режимов электростанций и энергосистем*, 3‑е изд., НГТУ, 2018 | General optimisation of power‑system operation                                  |
+| \[2] | **Секретарев Ю.А. и др.** *Основы расчётов гидроэнергетических режимов ГЭС в энергосистеме*, НГТУ, 2020                     | Hydrological‑energy calculations & dispatch curves                              |
 
 > The code examples in this repository reproduce, in a programmatic way, the
 > manual step‑by‑step calculations found in \[2] (Chs. 4–6) and extend them with
