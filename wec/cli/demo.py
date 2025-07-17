@@ -23,7 +23,7 @@ def main() -> None:
         lowwater_marks=[431, 431.5, 432.5, 433.5, 434, 434.5, 435.0, 436.0],
         lowwater_inflows=[1000, 1500, 3350, 6100, 7900, 9900, 12200, 16000],
     )
-    levels = StaticLevels(nrl=458, dead=450)
+    levels = StaticLevels(nrl=458, dead=457, installed_capacity=500)
     series = HydrologicalSeries(
         months=list(range(1, 13)),
         domestic_inflows=[540, 450, 740, 2850, 3500, 1100, 750, 630, 450, 465, 560, 410],

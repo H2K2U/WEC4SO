@@ -48,7 +48,7 @@ class ReservoirSimulator:
         # Pre‑compute static numbers
         self._nrl_volume = float(np.interp(levels.nrl, geom.headwater_marks, geom.average_volumes))
 
-    # ------- public API --------------------------------------------------
+    # -------public API --------------------------------------------------
     def run(self) -> pd.DataFrame:
         """Return a dataframe with month‑by‑month reservoir & plant metrics."""
         logger.info("Starting reservoir simulation …")
@@ -84,6 +84,7 @@ class ReservoirSimulator:
             z_low = compute_lowwater_mark(plant_inflow, self.geom, self.interp)
             pressure = avg_head - z_low
             n_ges = compute_domestic_capacity(plant_inflow, pressure)
+            n_ges = min(n_ges, self.levels.installed_capacity)
 
             # log once per month if desired
             logger.debug("m=%s mode=%s dV=%.2f km³ N=%.1f MW", month, mode, dV, n_ges)
@@ -93,7 +94,6 @@ class ReservoirSimulator:
                     "Месяц": month,
                     "Режим": str(mode),
                     "Q_быт, м³/с": q_byt,
-                    "N_гар, МВт": n_gar,
                     "dV, км³": dV if mode is OperationMode.DISCHARGE else -dV,
                     "V_вдх_нач, км³": start_volume,
                     "V_вдх_кон, км³": end_volume,
@@ -101,6 +101,7 @@ class ReservoirSimulator:
                     "Z_вб_кон, м": end_head,
                     "Z_нб, м": z_low,
                     "H, м": pressure,
+                    "N_гар, МВт": n_gar,
                     "N_ГЭС, МВт": n_ges,
                 }
             )
@@ -110,7 +111,7 @@ class ReservoirSimulator:
 
         return pd.DataFrame.from_records(records)
 
-    # ------- private helpers ---------------------------------------------
+    # -------private helpers ---------------------------------------------
     def _calc_discharge_volumes(self, start_volume: float, d_indices: List[int]) -> List[float]:
         """Iteratively raise dV for each discharge month until N≥1.05·Nгар."""
         volumes: List[float] = [0.0 for _ in d_indices]
@@ -124,8 +125,8 @@ class ReservoirSimulator:
                 z_low = compute_lowwater_mark(plant_inflow, self.geom)
                 avg_head = self.levels.nrl - z_low  # close approx; dV small per iteration
                 n_ges = compute_domestic_capacity(plant_inflow, avg_head)
-                if n_ges >= 1.05 * n_gar:
-                    break
+                n_ges = min(n_ges, self.levels.installed_capacity)
+                if n_ges >= 1.05 * n_gar: break
                 dV += 0.01  # км³ step
             volumes[k] = dV
             start_volume -= dV  # mutate for consecutive months
@@ -133,8 +134,7 @@ class ReservoirSimulator:
 
     @staticmethod
     def _initial_fill_distribution(total_discharge: float, fill_indices: List[int]) -> List[float]:
-        if not fill_indices:
-            return []
+        if not fill_indices: return []
         even_share = total_discharge / len(fill_indices)
         return [even_share for _ in fill_indices]
 
@@ -146,8 +146,7 @@ class ReservoirSimulator:
         start_volume: float,
     ) -> List[float]:
         """Very similar to original iterative balancing loop, but more explicit."""
-        if not fill_indices:
-            return []
+        if not fill_indices: return []
         volumes = fill_volumes.copy()
         plant_caps = self._recompute_fill_capacities(volumes, fill_indices, start_volume)
         for i, idx in enumerate(fill_indices):

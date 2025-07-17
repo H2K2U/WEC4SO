@@ -41,6 +41,13 @@ class MonthSelector:
             n_byt = compute_domestic_capacity(q_byt, head) + 1  # +1 МВт margin vs rounding
             mode = OperationMode.DISCHARGE if n_byt < n_gar else OperationMode.FILL
             modes.append(mode)
+        for i in range(1, len(modes) - 1):
+            if (
+                modes[i - 1] is OperationMode.DISCHARGE
+                and modes[i]     is OperationMode.FILL
+                and modes[i + 1] is OperationMode.DISCHARGE
+            ):
+                modes[i] = OperationMode.DISCHARGE   # превращаем «ложное» наполнение в сработку
         return modes
 
     def rotated(self) -> Tuple[HydrologicalSeries, List[OperationMode]]:
