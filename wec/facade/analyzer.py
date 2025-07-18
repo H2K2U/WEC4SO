@@ -6,7 +6,9 @@ from ..domain.static_levels import StaticLevels
 from ..domain.hydrological_series import HydrologicalSeries
 from ..core.month_selector import MonthSelector
 from ..core.reservoir_simulator import ReservoirSimulator
+from ..optimizers import AbstractOptimizer
 from ..visualization import plots
+
 
 class WECAnalyzer:
     """High‑level entry point for clients."""
@@ -14,10 +16,10 @@ class WECAnalyzer:
                  series: HydrologicalSeries):
         self.g, self.lvl, self.s = geom, levels, series
 
-    def simulate(self) -> pd.DataFrame:
+    def simulate(self, optimizer: str | AbstractOptimizer = "greedy"):
         sel = MonthSelector(self.s, self.g, self.lvl)
-        rot_series, modes = sel.rotated()
-        sim = ReservoirSimulator(self.g, self.lvl, rot_series, modes)
+        rot_s, modes = sel.rotated()
+        sim = ReservoirSimulator(self.g, self.lvl, rot_s, modes, optimizer=optimizer)
         return sim.run()
 
     # thin wrappers to plotting helpers

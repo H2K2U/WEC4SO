@@ -38,7 +38,7 @@ class MonthSelector:
         for q_byt, n_gar in zip(self._s.domestic_inflows, self._s.guaranteed_capacity):
             z_low = compute_lowwater_mark(q_byt, self._geom, self._interp)
             head = nrl_level - z_low
-            n_byt = compute_domestic_capacity(q_byt, head) + 1  # +1 МВт margin vs rounding
+            n_byt = compute_domestic_capacity(q_byt, head)
             mode = OperationMode.DISCHARGE if n_byt < n_gar else OperationMode.FILL
             modes.append(mode)
         for i in range(1, len(modes) - 1):

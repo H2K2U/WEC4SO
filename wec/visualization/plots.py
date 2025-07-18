@@ -23,6 +23,6 @@ def plot_reservoir_levels(df: pd.DataFrame, levels: StaticLevels) -> None:
     plt.xticks(x, months)
     plt.axhline(levels.nrl, ls="--", color="red", label="НПУ")
     plt.axhline(levels.dead, ls="--", color="green", label="УМО")
-    plt.title("Сработки/наполнения водохранилища – год")
+    plt.title("График сработки и наполнения водохранилища\nна годовом интервале с шагом в один месяц")
     plt.xlabel("Месяц"); plt.ylabel("Zвб, м")
     plt.grid(True); plt.legend(); plt.show()
