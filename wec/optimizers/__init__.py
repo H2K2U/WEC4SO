@@ -24,4 +24,7 @@ def get(name: str = "greedy") -> AbstractOptimizer:
     if name == "pyomo":
         from .pyomo_optimizer import PyomoOptimizer
         return PyomoOptimizer()
+    if name == "dynamic":
+        from .dynamic import DynamicOptimizer
+        return DynamicOptimizer()
     raise ValueError(f"Unknown optimizer '{name}'")
