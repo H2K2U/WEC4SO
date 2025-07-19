@@ -95,7 +95,8 @@ $ python -m venv .venv && source .venv/bin/activate
 $ pip install -e .[dev]
 ```
 
-> **Dependencies**: `numpy`, `pandas`, `matplotlib` (all MIT/BSD licenses).
+> **Dependencies**: `numpy`, `pandas`, `matplotlib`, `pyomo` (all MIT/BSD licenses).
+> To run the solver-based optimiser you also need a MILP solver such as **CBC**.
 
 ## Quick start
 
@@ -115,6 +116,10 @@ The script will:
 
 Feel free to replace the sample inflow series with your own CSV data.
 
+To use the Pyomo-based optimisation model instead of the greedy heuristic,
+call `WECAnalyzer.simulate(optimizer="pyomo")`.  Ensure that Pyomo and a solver
+(for example `cbc`) are installed and available on your `PATH`.
+
 ## Testing
 
 Unit tests live under **`tests/`** and rely on **pytest**:
@@ -127,7 +132,7 @@ A minimal dataset in `tests/fixtures/` guarantees ≤ 0.5 s runtime.
 
 ## Roadmap
 
-* ⚙️  Replace greedy heuristics with MILP solver (Pyomo / CBC).
+* ⚙️  Provide solver-based optimisation via Pyomo/CBC.
 * 📈  Add LiveCharts‑like interactive dashboard via Plotly.
 * 🌐  Publish REST API (FastAPI) for remote scenario runs.
 
