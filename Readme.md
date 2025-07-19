@@ -123,7 +123,7 @@ Unit tests live under **`tests/`** and rely on **pytest**:
 $ pytest -q
 ```
 
-A minimal dataset in `tests/fixtures/` guarantees ≤ 0.5 s runtime.
+Fixtures in `tests/conftest.py` provide a minimal dataset for fast runs.
 
 ## Roadmap
 
