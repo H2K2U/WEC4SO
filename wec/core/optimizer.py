@@ -18,12 +18,17 @@ def optimise_year(
     series: HydrologicalSeries,
     modes: list[OperationMode],           # ← передаём список режимов
     safety: float = 1.00,                 # запас к N_гар
+    solver: str | None = None,            # имя решателя Pyomo (CBC, GLPK, ...)
 ) -> pyo.ConcreteModel:
     """
-    Нелинейная модель: max Σ N_ГЭС
-      safety·N_гар ≤ N_ГЭС ≤ N_уст
-      Z_УМО ≤ Z_вб ≤ Z_НПУ, причём в последний месяц сработки Z_вб = Z_УМО
-      Σ ΔV = 0
+    Нелинейная модель ``max Σ N_ГЭС``.
+
+    * ``safety·N_гар ≤ N_ГЭС ≤ N_уст``;
+    * ``Z_УМО ≤ Z_вб ≤ Z_НПУ`` (в последний месяц сработки ``Z_вб = Z_УМО``);
+    * ``Σ ΔV = 0``.
+
+    Если указан ``solver``, модель будет сразу решена и
+    возвращена в решённом состоянии.
     """
     T, dt = len(series.months), SECONDS_PER_MONTH
 
@@ -116,5 +121,12 @@ def optimise_year(
         m.V[t].value = V_nrl
         m.Q[t].value = Q_byt[t]
         m.Z_up_prev[t].value = levels.nrl
+
+    if solver:
+        opt = pyo.SolverFactory(solver)
+        if opt is None:
+            raise RuntimeError(f"Pyomo solver '{solver}' is not available")
+        result = opt.solve(m)
+        m.solutions.load_from(result)
 
     return m

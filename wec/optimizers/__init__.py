@@ -21,4 +21,7 @@ def get(name: str = "greedy") -> AbstractOptimizer:
     if name == "greedy":
         from .greedy import GreedyOptimizer
         return GreedyOptimizer()
+    if name == "pyomo":
+        from .pyomo_optimizer import PyomoOptimizer
+        return PyomoOptimizer()
     raise ValueError(f"Unknown optimizer '{name}'")
