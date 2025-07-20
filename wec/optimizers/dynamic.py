@@ -3,7 +3,7 @@
 
 The reservoir volume at the beginning of a month is treated as the DP
 state.  The algorithm discretises the feasible interval between the
-`dead` level and `NRL` in 0.1 km³ steps and explores all transitions.
+`dead` level and `NRL` in 0.1km³ steps and explores all transitions.
 A squared penalty is added whenever the guaranteed capacity is not
 met.  Only transitions that respect volume bounds and the installed
 capacity constraint are considered.

@@ -1,1 +1,0 @@
-"""Minimal matplotlib stub"""

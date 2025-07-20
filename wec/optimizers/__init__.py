@@ -27,4 +27,7 @@ def get(name: str = "greedy") -> AbstractOptimizer:
     if name == "dynamic":
         from .dynamic import DynamicOptimizer
         return DynamicOptimizer()
+    if name == "gwo":
+        from .gwo import GreyWolfOptimizer
+        return GreyWolfOptimizer()
     raise ValueError(f"Unknown optimizer '{name}'")
