@@ -16,6 +16,6 @@ def compute_headwater_mark(volume: float, geom: Geometry, interp: Interpolator =
 def compute_domestic_capacity(q: float, h: float) -> float:
     """Бытовая мощность (МВт) по расходу и напору.
 
-    Formula: *N* = 8.5 × Q × H / 1000.
+    Formula: N=8.5×Q×H/1000.
     """
     return 8.5 * q * h / 1000.0

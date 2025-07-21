@@ -26,18 +26,18 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ReservoirState:
-    """Текущее состояние водохранилища в цикле моделирования."""
+    """Текущее состояние водохранилища вцикле моделирования."""
     volume: float  # км³
 
 
 class ReservoirSimulator:
     """
-    Месячный (T = 12) прогон режима водохранилища.
+    Месячный (T=12) прогон режима водохранилища.
 
-    Логика расчёта помесячных изменений объёма (ΔV) вынесена в объект‑стратегию
+    Логика расчёта помесячных изменений объёма (ΔV) вынесена вобъект‑стратегию
     `optimizer`, реализующий интерфейс `AbstractOptimizer`. Это позволяет
     «горячо» подставлять разные алгоритмы (greedy, pyomo‑NLP, MILP, …),
-    не трогая вычисление энергетических показателей и форма͏т выходной таблицы.
+    нетрогая вычисление энергетических показателей иформа͏т выходной таблицы.
     """
 
     # ------------------------------------------------------------------
@@ -72,20 +72,20 @@ class ReservoirSimulator:
 
     # ------------------------------------------------------------------
     def run(self) -> pd.DataFrame:
-        """Возвращает подробную таблицу ВЭР за год."""
+        """Возвращает подробную таблицу ВЭР за год."""
         logger.info("Starting reservoir simulation …")
         state = ReservoirState(volume=self._nrl_volume)
         records: list[dict] = []
 
-        # 1️⃣ Получить весь план ΔV (уже со знаком)
+        # Получить весь план ΔV (уже со знаком)
         dv_plan = self.optimizer.compute_dV(
             self.geom, self.levels, self.series, self.modes
         )
 
-        # 2️⃣ Последовательно симулировать месяцы
+        # Последовательно симулировать месяцы
         for i, month in enumerate(self.series.months):
             mode = self.modes[i]
-            dV   = dv_plan[i]  # сработка >0, наполнение <0  (договорённость)
+            dV   = dv_plan[i]  # сработка<0, наполнение>0
 
             q_byt = self.series.domestic_inflows[i]
             n_gar = self.series.guaranteed_capacity[i]
@@ -96,7 +96,7 @@ class ReservoirSimulator:
             end_head   = compute_headwater_mark(end_vol,   self.geom, self.interp)
             avg_head   = 0.5 * (start_head + end_head)
 
-            # вклад водохранилища в расход ГЭС
+            # вклад водохранилища врасход ГЭС
             res_delta_q = (- dV * 1e9) / SECONDS_PER_MONTH  # м³/с
             plant_q = q_byt + res_delta_q
 
@@ -128,7 +128,7 @@ class ReservoirSimulator:
                     "N_ГЭС, МВт": n_ges,
                 }
             )
-            state.volume = end_vol  # переход к следующему месяцу
+            state.volume = end_vol  # переход к следующему месяцу
 
         pd.set_option("display.max_columns", None)
         pd.set_option("display.width", 0)

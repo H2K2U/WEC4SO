@@ -32,7 +32,7 @@ class MonthSelector:
     def calc_modes(self) -> List[OperationMode]:
         """Return monthly mode list without rotation.
 
-        A month is in *DISCHARGE* mode when *Nбыт* < *Nгар* (±1 МВт guard)."""
+        A month is in *DISCHARGE* mode when Nбыт<Nгар (±1 МВт guard)."""
         modes: List[OperationMode] = []
         nrl_level = self._levels.nrl
         for q_byt, n_gar in zip(self._s.domestic_inflows, self._s.guaranteed_capacity):
@@ -47,11 +47,11 @@ class MonthSelector:
                 and modes[i]     is OperationMode.FILL
                 and modes[i + 1] is OperationMode.DISCHARGE
             ):
-                modes[i] = OperationMode.DISCHARGE   # превращаем «ложное» наполнение в сработку
+                modes[i] = OperationMode.DISCHARGE   # превращаем «ложное» наполнение в сработку
         return modes
 
     def rotated(self) -> Tuple[HydrologicalSeries, List[OperationMode]]:
-        """Rotate so that first *DISCHARGE* month after August (index > 8) starts year."""
+        """Rotate so that first *DISCHARGE* month after August (index>8) starts year."""
         modes = self.calc_modes()
         try:
             start_idx = next(i for i, m in enumerate(modes) if m is OperationMode.DISCHARGE and i > 8)
