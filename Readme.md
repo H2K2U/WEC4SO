@@ -1,146 +1,120 @@
-# WEC — Water‑Energy Calculations for HPP Reservoir Operation
+# WEC — Water‑Energy Calculations
 
-> **A Python toolkit for long‑term optimisation of hydroelectric reservoir drawdown/fill cycles**
-
----
-
-## Table of contents
-
-1. [Motivation](#motivation)
-2. [Theoretical background](#theoretical-background)
-3. [Software architecture](#software-architecture)
-4. [Installation](#installation)
-5. [Quick start](#quick-start)
-6. [Testing](#testing)
-7. [Roadmap](#roadmap)
-8. [Citing & bibliography](#citing--bibliography)
-9. [License](#license)
+> **Python‑инструментарий для оптимизации годовых режимов работы водохранилищ ГЭС**
 
 ---
 
-## Motivation
+## Оглавление
 
-Hydropower plants (HPPs) with annual storage reservoirs play a pivotal role in load–following,
-frequency regulation and renewables integration.
-Planning an **optimal discharge/fill schedule** that maximises generation while respecting
-hydrological and market constraints is therefore an evergreen research and industrial topic.
-This repository offers a compact yet extensible reference implementation of a
-**month‑by‑month reservoir simulation and optimisation engine** backed by the curricula of
-Novosibirsk State Technical University.
+1. [Зачем нужен WEC](#зачем-нужен-wec)
+2. [Теоретическая основа](#теоретическая-основа)
+3. [Архитектура проекта](#архитектура-проекта)
+4. [Установка](#установка)
+5. [Быстрый старт](#быстрый-старт)
+6. [Тесты](#тесты)
+7. [Планы развития](#планы-развития)
+8. [Лицензия](#лицензия)
 
+---
 
-## Theoretical background
+## Зачем нужен WEC
 
-The mathematical formulation follows the classical long‑term HPP scheduling problem
-— maximise annual energy **W** subject to:
+Гидроэлектростанции годового регулирования критичны для покры́тия
+пиков нагрузки, регулирования частоты и балансировки ВИЭ. Задача
+**планирования оптимального графика сработки/наполнения** водохранилища
+остаётся актуальной как для науки, так и для промышленности.
+WEC предоставляет компактную, но расширяемую реализацию **помесячной
+симуляции и оптимизации** режима ГЭС, основанную на материалах НГТУ.
 
-* reservoir mass balance;
-* head dependency on storage curve **H(V)**;
-* power equation `N = 8.5 · Q · H / 1000` MW;
-* bounds on forebay levels (NRL ≤ Z₍вб₎ ≤ UМО) and environmental releases;
-* installed capacity limit *N\_inst*.
+## Теоретическая основа
 
-The implementation is inspired by course material and examples from the following
-textbooks:
+Оптимизируем:
+*максимум годовой выработки* `W = Σ N_t · Δt`, при ограничениях
 
-| Ref  | Title                                                                                                                       | Scope                                                                           |
-| ---- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| \[1] | **Филиппова Т.А., Сидоркин Ю.М., Русина А.Г.**<br>*Оптимизация режимов электростанций и энергосистем*, 3‑е изд., НГТУ, 2018 | General optimisation of power‑system operation                                  |
-| \[2] | **Секретарев Ю.А. и др.** *Основы расчётов гидроэнергетических режимов ГЭС в энергосистеме*, НГТУ, 2020                     | Hydrological‑energy calculations & dispatch curves                              |
+* баланса массы водохранилища;
+* зависимости напора от объёма `H = f(V)`;
+* уравнения мощности `N = 8.5 · Q · H / 1000` (МВт);
+* диапазона уровней (УМО ≤ Zᵥб ≤ НПУ) и обязательных экологических
+  сбросов;
+* установленной мощности `N_inst`.
 
-> The code examples in this repository reproduce, in a programmatic way, the
-> manual step‑by‑step calculations found in \[2] (Chs. 4–6) and extend them with
-> optimisation heuristics advocated in \[1] (Ch. 9).
+Алгоритмы основаны на учебниках:
 
-## Software architecture
+| №    | Ссылка                                                                                   | Описание                    |
+| ---- |------------------------------------------------------------------------------------------| --------------------------- |
+| \[1] | **Филиппова Т.А. и др.** *Оптимизация режимов электростанций…*, НГТУ, 2018               | общая оптимизация ЭЭС       |
+| \[2] | **Секретарев Ю.А. и др.** *Основы расчётов гидроэнергетических режимов ГЭС…*, НГТУ, 2020 | гидроэнергетические расчёты |
 
-```text
+## Архитектура проекта
+
+```
 wec/
-├─ constants.py                # domain‑wide constants
-├─ domain/                     # pure data models
-│   ├─ geometry.py             # Geometry dataclass
-│   ├─ static_levels.py        # StaticLevels (+ installed_capacity)
-│   └─ hydrological_series.py  # HydrologicalSeries
-├─ core/                       # business logic
-│   ├─ interpolation.py        # Interpolator protocol + default impl.
-│   ├─ formulas.py             # reusable hydraulic / energy formulas
-│   ├─ month_selector.py       # automatic regime labelling & rotation
-│   └─ reservoir_simulator.py  # forward simulation & heuristics
-├─ facade/
-│   └─ analyzer.py             # WECAnalyzer – single class to import
-├─ visualization/              # matplotlib helpers (optional)
-│   └─ plots.py
-└─ __init__.py                 # re‑exports for end‑users
+├─ constants.py              # глобальные константы
+├─ domain/                   # «чистые» датаклассы
+│   ├─ geometry.py           # кривая V–Z и Q–Z
+│   ├─ static_levels.py      # НПУ, УМО, N_inst
+│   └─ hydrological_series.py# Q_быт, N_гар по месяцам
+├─ core/                     # бизнес‑логика
+│   ├─ interpolation.py      # протокол Interpolator
+│   ├─ formulas.py           # гидравлические формулы
+│   ├─ month_selector.py     # классификация месяцев
+│   └─ reservoir_simulator.py# симуляция по ΔV
+├─ optimizers/               # стратегии выбора ΔV
+│   ├─ greedy.py             # жадный алгоритм
+│   └─ dynamic.py            # динамическое программирование
+├─ facade/analyzer.py        # WECAnalyzer — главный фасад
+├─ visualization/plots.py    # графики (matplotlib)
+└─ __init__.py               # публичный API
 cli/
-└─ demo.py                     # reproducible example (see below)
+└─ demo.py                   # пошаговый пример
 ```
 
-### Extending the toolkit
+### Расширение
 
-* Add new optimisation strategies in `core/` without touching `facade/`.
-* Plug alternative interpolators (e.g. monotone splines) by implementing
-  `Interpolator`.
-* Swap plotting backend by replacing functions in `visualization/`.
+* Добавляйте новые оптимизаторы в `optimizers/`, не трогая фасад.
+* Реализуйте свой `Interpolator` для монотонных сплайнов и т.д.
+* Замените backend графиков, переписав функции в `visualization/`.
 
-## Installation
+## Установка
 
 ```bash
-# clone repo
-$ git clone https://github.com/your‑org/wec.git && cd wec
+# клонируем репозиторий
+$ git clone https://github.com/H2K2U/WEC4SO && cd wec
 
-# create venv (recommended)
+# создаём виртуальное окружение
 $ python -m venv .venv && source .venv/bin/activate
 
-# editable install for development
-$ pip install -e .[dev]
+# установка в editable‑режиме
+$ pip install -e .
 ```
 
-> **Dependencies**: `numpy`, `pandas`, `matplotlib`, `pyomo` (all MIT/BSD licenses).
-> To run the solver-based optimiser you also need a MILP solver such as **CBC**.
+**Зависимости:** `numpy`, `pandas`, `matplotlib` (MIT/BSD лицензии).
 
-## Quick start
+## Быстрый старт
 
 ```bash
 $ python cli/demo.py
 ```
 
-The script will:
+Скрипт:
 
-1. build dataclass instances from sample input;
-2. label months, rotate hydrological year, simulate reservoir;
-3. print a tidy `pandas` table and show three illustrative charts:
+1. формирует объекты данных из встроенных примеров;
+2. запускает оптимизатор (по умолчанию — `dynamic`);
+3. выводит таблицу `pandas` и строит график уровней.
 
-   * domestic inflow distribution;
-   * guaranteed capacity curve;
-   * reservoir forebay elevation trajectory.
-
-Feel free to replace the sample inflow series with your own CSV data.
-
-To use the Pyomo-based optimisation model instead of the greedy heuristic,
-call `WECAnalyzer.simulate(optimizer="pyomo")`.  Ensure that Pyomo and a solver
-(for example `cbc`) are installed and available on your `PATH`.
-
-## Testing
-
-Unit tests live under **`tests/`** and rely on **pytest**:
+## Тесты
 
 ```bash
 $ pytest -q
 ```
 
-Fixtures in `tests/conftest.py` provide a minimal dataset for fast runs.
+## Планы развития
 
-## Roadmap
+* ⚙️ Поддержка MILP‑оптимизации через Pyomo/CBC.
+* 🌐 REST‑API на FastAPI для удалённого запуска сценариев.
+* 📊 Интерактивная дашборд‑панель на Plotly.
 
-* ⚙️  Provide solver-based optimisation via Pyomo/CBC.
-* 📈  Add LiveCharts‑like interactive dashboard via Plotly.
-* 🌐  Publish REST API (FastAPI) for remote scenario runs.
 
-## Citing & bibliography
+## Лицензия
 
-If you use *WEC* in academic research, please cite the relevant textbooks
-(\[1]‑\[4]) alongside the GitHub repository DOI (zenodo badge forthcoming).
-
-## License
-
-**MIT License** — free for academic and commercial use.  See `LICENSE` for details.
+**MIT License** — свободно для академического и коммерческого применения.

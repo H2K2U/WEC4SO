@@ -1,17 +1,49 @@
 # wec/core/interpolation.py
+"""Минимальный слой абстракции над одномерной интерполяцией.
+
+В проекте WEC нам нужен очень лёгкий интерфейс, чтобы:
+1. Подменять функцию интерполяции в модульных тестах (например,
+   использовать искусственные значения без вызова ``numpy``).
+2. Избежать прямой зависимости бизнес‑логики от конкретного пакета
+   SciPy/NumPy (в дальнейшем можно будет заменить реализацию,
+   сохранив сигнатуру вызова).
+"""
+
+from __future__ import annotations
 
 from typing import Protocol, Sequence
+
 import numpy as np
 
+
 class Interpolator(Protocol):
-    """A minimal interface for 1‑D interpolation, so we can inject mocks.
-    Any object satisfying ``__call__(x, xp, fp) -> float`` qualifies.
+    """Простейший протокол для 1‑D интерполяции.
+
+    Любой объект, реализующий вызов ``__call__(x, xp, fp) -> float``,
+    считается валидным интерполятором.  Благодаря этому можно легко
+    внедрять *mocks* в юнит‑тестах и не зависеть напрямую от
+    ``numpy.interp``.
     """
 
     def __call__(self, x: float | np.ndarray, xp: Sequence[float], fp: Sequence[float]) -> float:  # noqa: E501
+        """Вычислить интерполированное значение.
+
+        Параметры
+        ----------
+        x : float | ndarray
+            Точка или массив точек, в которых нужно найти значение.
+        xp : Sequence[float]
+            Узлы интерполяции (монотонно возрастающие x‑координаты).
+        fp : Sequence[float]
+            Значения функции в узлах ``xp``.
+        """
         ...
 
 
 def default_interp(x: float | np.ndarray, xp: Sequence[float], fp: Sequence[float]) -> float:  # noqa: E501
-    """Thin wrapper around :func:`numpy.interp` so that we can unit‑test easily."""
+    """Обёртка над :func:`numpy.interp`, позволяющая легко подменять реализацию.
+
+    Возвращается **float**, даже если на вход подали ``ndarray``: это сделано
+    для упрощения дальнейших расчётов, где ожидается скаляр.
+    """
     return float(np.interp(x, xp, fp))
