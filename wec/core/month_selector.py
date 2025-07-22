@@ -103,7 +103,21 @@ class MonthSelector:
             ):
                 # Считаем промежуточный месяц частью периода сработки
                 modes[i] = OperationMode.DISCHARGE
+          # --- обработка циклического края года (D‑F‑D через границу) ---
 
+        if (
+            modes[-1] is OperationMode.DISCHARGE
+            and modes[0] is OperationMode.FILL
+            and modes[1] is OperationMode.DISCHARGE
+        ):
+            modes[0] = OperationMode.DISCHARGE
+
+        if (
+            modes[-2] is OperationMode.DISCHARGE
+            and modes[-1] is OperationMode.FILL
+            and modes[0] is OperationMode.DISCHARGE
+        ):
+            modes[-1] = OperationMode.DISCHARGE
         return modes
 
     # ------------------------------------------------------------------
